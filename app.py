@@ -1,5 +1,4 @@
 import os
-import json
 import streamlit as st
 from dotenv import load_dotenv
 from PyPDF2 import PdfReader
@@ -35,24 +34,39 @@ def get_vectorstore(text_chunks):
     vectorstore = FAISS.from_texts(texts=text_chunks, embedding=embeddings)
     return vectorstore
 
-def generate_article_content(keyword, vectorstore, content_length, language, template_json):
+def generate_article_content(keyword, vectorstore, content_length):
     llm = ChatOpenAI(model='gpt-4')
     
-    prompt_template = template_json['prompt_template']
+    prompt_template = """
+    Based on the information from the uploaded documents and your knowledge about {keyword},
+    write a comprehensive article that covers the following aspects:
+
+    1. Introduction to {keyword}
+    2. Key points and best practices related to {keyword}
+    3. Common challenges and how to overcome them
+    4. Future trends or predictions in this area
+    5. Conclusion with actionable advice
+
+    Use a professional tone and structure the article with clear headings (h2) and subheadings (h3).
+    Wrap each paragraph in <p> tags.
+    Aim for an article length of about {content_length} words.
+    Use HTML tags for structure, but do not include any CSS or JavaScript.
+
+    Article Content:
+    """
     
     prompt = PromptTemplate(
-        input_variables=["keyword", "content_length", "language"],
+        input_variables=["keyword", "content_length"],
         template=prompt_template
     )
     
     chain = LLMChain(llm=llm, prompt=prompt)
     
-    article_content = chain.run(keyword=keyword, content_length=content_length, language=language)
+    article_content = chain.run(keyword=keyword, content_length=content_length)
     return article_content
 
-def generate_html5_page(keyword, article_content, language, template_html):
+def generate_html5_page(keyword, article_content, template_html):
     return template_html.format(
-        language=language.lower()[:2],
         keyword=keyword,
         article_content=article_content
     )
@@ -72,26 +86,18 @@ def main():
     # HTML template uploader
     html_template_file = st.file_uploader("Upload HTML template", type="html")
 
-    # JSON template uploader
-    json_template_file = st.file_uploader("Upload JSON template", type="json")
-
     # Content length (fixed to 800)
     content_length = 800
 
-    # Language selection (excluding English)
-    languages = ["English"]
-    selected_language = st.selectbox("Select the language for the article:", languages)
-
     # Process PDFs and generate HTML5 article
-    if uploaded_files and keywords_file and html_template_file and json_template_file:
+    if uploaded_files and keywords_file and html_template_file:
         if st.button("Generate HTML5 Articles"):
             with st.spinner("Processing PDFs and generating HTML5 articles..."):
                 # Read keywords
                 keywords = keywords_file.getvalue().decode().splitlines()
 
-                # Read templates
+                # Read HTML template
                 html_template = html_template_file.getvalue().decode()
-                json_template = json.load(json_template_file)
 
                 # Process PDFs
                 raw_text = fetch_pdf_content(uploaded_files)
@@ -100,8 +106,8 @@ def main():
 
                 # Generate articles for each keyword
                 for keyword in keywords:
-                    article_content = generate_article_content(keyword, vectorstore, content_length, selected_language, json_template)
-                    html5_page = generate_html5_page(keyword, article_content, selected_language, html_template)
+                    article_content = generate_article_content(keyword, vectorstore, content_length)
+                    html5_page = generate_html5_page(keyword, article_content, html_template)
                     
                     st.subheader(f"Generated HTML5 Article: {keyword}")
                     st.code(html5_page, language='html')
