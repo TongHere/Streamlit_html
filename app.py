@@ -108,6 +108,13 @@ def generate_html5_page(keyword, article_content, language):
     """
     return html_template
 
+def upload_keyword_file():
+    uploaded_file = st.file_uploader("Upload a file with keywords (one per line)", type="txt")
+    if uploaded_file is not None:
+        keywords = uploaded_file.getvalue().decode().splitlines()
+        return keywords
+    return None
+
 def main():
     load_dotenv()
     st.set_page_config(page_title="AI HTML5 Article Generator", page_icon="@")
@@ -117,37 +124,42 @@ def main():
     # File uploader for multiple PDFs
     uploaded_files = st.file_uploader("Upload your PDFs", type="pdf", accept_multiple_files=True)
 
-    # User input for keyword
-    user_keyword = st.text_input("Enter a keyword for the article:")
+    # Keyword file upload
+    keywords = upload_keyword_file()
 
-    # Content length selection
-    content_length = st.selectbox("Select content length:", [800])
+    # HTML template uploader
+    html_template_file = st.file_uploader("Upload HTML template", type="html")
 
-    # Language selection
-    languages = ["English"]
-    selected_language = st.selectbox("Select the language for the article:", languages)
+    # Content length (fixed to 800)
+    content_length = 800
 
     # Process PDFs and generate HTML5 article
-    if uploaded_files and user_keyword:
-        if st.button("Generate HTML5 Article"):
-            with st.spinner("Processing PDFs and generating HTML5 article..."):
+    if uploaded_files and keywords and html_template_file:
+        if st.button("Generate HTML5 Articles"):
+            with st.spinner("Processing PDFs and generating HTML5 articles..."):
+                # Read HTML template
+                html_template = html_template_file.getvalue().decode()
+
+                # Process PDFs
                 raw_text = fetch_pdf_content(uploaded_files)
                 text_chunks = get_text_chunks(raw_text)
                 vectorstore = get_vectorstore(text_chunks)
-                
-                article_content = generate_article_content(user_keyword, vectorstore, content_length, selected_language)
-                html5_page = generate_html5_page(user_keyword, article_content, selected_language)
-                
-                st.subheader(f"Generated HTML5 Article: {user_keyword}")
-                st.code(html5_page, language='html')
-                
-                # Option to download the HTML5 file
-                st.download_button(
-                    label="Download HTML5 Article",
-                    data=html5_page,
-                    file_name=f"{user_keyword.replace(' ', '_')}_article.html",
-                    mime="text/html"
-                )
+
+                # Generate articles for each keyword
+                for keyword in keywords:
+                    article_content = generate_article_content(keyword, vectorstore, content_length)
+                    html5_page = generate_html5_page(keyword, article_content, html_template)
+                    
+                    st.subheader(f"Generated HTML5 Article: {keyword}")
+                    st.code(html5_page, language='html')
+                    
+                    # Option to download the HTML5 file
+                    st.download_button(
+                        label=f"Download HTML5 Article for '{keyword}'",
+                        data=html5_page,
+                        file_name=f"{keyword.replace(' ', '_')}_article.html",
+                        mime="text/html"
+                    )
 
 if __name__ == '__main__':
     main()
