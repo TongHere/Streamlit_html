@@ -121,10 +121,10 @@ def main():
     user_keyword = st.text_input("Enter a keyword for the article:")
 
     # Content length selection
-    content_length = st.selectbox("Select content length:", [800, 1000])
+    content_length = st.selectbox("Select content length:", [800])
 
     # Language selection
-    languages = ["English", "Spanish", "French", "German", "Italian"]
+    languages = ["English"]
     selected_language = st.selectbox("Select the language for the article:", languages)
 
     # Process PDFs and generate HTML5 article
