@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 from langchain.chat_models import ChatOpenAI
 from langchain.chains import LLMChain
 from langchain.prompts import PromptTemplate
+import re
 
 load_dotenv()
 
@@ -58,6 +59,19 @@ def generate_article_content(keyword, content_length, language):
 
 def generate_html5_page(keyword, article_content, html_template):
     try:
+        # Update meta title
+        title_pattern = r'<title>.*?</title>'
+        new_title = f'<title>{keyword}</title>'
+        if re.search(title_pattern, html_template):
+            html_template = re.sub(title_pattern, new_title, html_template)
+        else:
+            head_end = html_template.find('</head>')
+            if head_end != -1:
+                html_template = html_template[:head_end] + new_title + html_template[head_end:]
+            else:
+                st.warning("Could not find </head> tag. Title may not be updated.")
+
+        # Insert article content
         content_section_start = html_template.find('<section class="content-section">')
         content_section_end = html_template.find('</section>', content_section_start)
         
