@@ -79,7 +79,7 @@ def main():
     content_length = 800
 
     # Language selection (excluding English)
-    languages = ["Spanish", "French", "German", "Italian"]
+    languages = ["English"]
     selected_language = st.selectbox("Select the language for the article:", languages)
 
     # Process PDFs and generate HTML5 article
