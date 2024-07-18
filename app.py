@@ -9,6 +9,7 @@ from langchain.chat_models import ChatOpenAI
 from langchain.chains import LLMChain
 from langchain.prompts import PromptTemplate
 import tempfile
+import re
 
 load_dotenv()
 
@@ -36,6 +37,15 @@ def fetch_pdf_content(pdf_docs):
         except Exception as e:
             st.error(f"Error processing PDF: {pdf.name}. Error: {str(e)}")
     return text
+
+def clean_text(text):
+    # Remove any non-printable characters
+    text = re.sub(r'[^\x20-\x7E\n]', '', text)
+    # Remove multiple newlines
+    text = re.sub(r'\n+', '\n', text)
+    # Remove 'dataLayer' references
+    text = re.sub(r'\bdataLayer\b', '', text)
+    return text.strip()
 
 def get_text_chunks(text):
     text_splitter = CharacterTextSplitter(
@@ -81,8 +91,12 @@ def generate_article_content(keyword, vectorstore, content_length, language):
     
     chain = LLMChain(llm=llm, prompt=prompt)
     
-    article_content = chain.run(keyword=keyword, content_length=content_length, language=language)
-    return article_content
+    try:
+        article_content = chain.run(keyword=keyword, content_length=content_length, language=language)
+        return article_content
+    except Exception as e:
+        st.error(f"Error generating article for keyword '{keyword}': {str(e)}")
+        return None
 
 def generate_html5_page(keyword, article_content, language, html_template):
     return html_template.format(
@@ -97,66 +111,59 @@ def main():
 
     st.header("AI HTML5 Article Generator")
 
-    # File uploader for multiple PDFs
     uploaded_files = st.file_uploader("Upload your PDFs", type="pdf", accept_multiple_files=True)
-
-    # Keyword file uploader
     keyword_file = st.file_uploader("Upload your keywords file (txt)", type="txt")
-
-    # HTML template uploader
     html_template_file = st.file_uploader("Upload HTML template", type="html")
 
-    # Language selection
     languages = ["English", "Spanish", "French", "German", "Italian"]
     selected_language = st.selectbox("Select the language for the articles:", languages)
 
-    # Content length (fixed to 800)
     content_length = 800
 
-    # Process PDFs and generate HTML5 articles
     if uploaded_files and keyword_file and html_template_file:
         if st.button("Generate HTML5 Articles"):
             with st.spinner("Processing PDFs and generating HTML5 articles..."):
                 try:
-                    # Process keywords file
                     keywords, error_message = upload_and_process_keywords_file(keyword_file)
                     if error_message:
                         st.error(error_message)
                         return
 
-                    # Read HTML template
                     html_template = html_template_file.getvalue().decode()
 
-                    # Process PDFs
                     raw_text = fetch_pdf_content(uploaded_files)
                     if not raw_text:
                         st.error("No text could be extracted from the uploaded PDFs. Please check the files and try again.")
                         return
 
-                    text_chunks = get_text_chunks(raw_text)
+                    cleaned_text = clean_text(raw_text)
+                    st.text("Sample of cleaned text:")
+                    st.code(cleaned_text[:500])  # Display first 500 characters of cleaned text
+
+                    text_chunks = get_text_chunks(cleaned_text)
                     vectorstore = get_vectorstore(text_chunks)
 
                     st.write(f"Generating articles for keywords: {', '.join(keywords)}")
 
-                    # Generate articles for each keyword
                     for keyword in keywords:
                         article_content = generate_article_content(keyword, vectorstore, content_length, selected_language)
-                        html5_page = generate_html5_page(keyword, article_content, selected_language, html_template)
-                        
-                        st.subheader(f"Generated HTML5 Article: {keyword}")
-                        st.code(html5_page, language='html')
-                        
-                        # Option to download the HTML5 file
-                        st.download_button(
-                            label=f"Download HTML5 Article for '{keyword}'",
-                            data=html5_page,
-                            file_name=f"{keyword.replace(' ', '_')}_article.html",
-                            mime="text/html"
-                        )
+                        if article_content:
+                            html5_page = generate_html5_page(keyword, article_content, selected_language, html_template)
+                            
+                            st.subheader(f"Generated HTML5 Article: {keyword}")
+                            st.code(html5_page, language='html')
+                            
+                            st.download_button(
+                                label=f"Download HTML5 Article for '{keyword}'",
+                                data=html5_page,
+                                file_name=f"{keyword.replace(' ', '_')}_article.html",
+                                mime="text/html"
+                            )
                     
                     st.success("All articles have been generated successfully!")
                 except Exception as e:
                     st.error(f"An error occurred during processing: {str(e)}")
+                    st.error("Please check your input files and try again.")
 
 if __name__ == '__main__':
     main()
