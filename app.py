@@ -40,24 +40,23 @@ def generate_article_content(keyword, content_length, language):
         return article_content
         # llm = ChatOpenAI(model='gpt-4', temperature=0.7)
         
-        # prompt_template = """
-        # Write a comprehensive article about the keyword "{keyword}". 
-        # The article should cover the following aspects:
+        prompt_template = """
+        Give a friendly intro to {keyword}. What's it all about? Why should we care?
+        Structure the article like this:
 
-        # 1. Introduction to {keyword}
-        # 2. Key points and best practices related to {keyword}
-        # 3. Common challenges and how to overcome them in the context of {keyword}
-        # 4. Future trends or predictions in the area of {keyword}
-        # 5. Conclusion with actionable advice about {keyword}
+        1. Introduction to {keyword}
+        2. Break down the important stuff about {keyword}. What should people know?
+        3. Share some awesome tips and tricks for mastering {keyword}.</p>
+        4. Future trends or predictions in the area of {keyword}
+        5. Sum it all up and give some easy-to-follow advice on{keyword}
+        
+        Keep it fun, friendly, and easy to read. Aim for about {content_length} words.
+        Write in {language}, and remember - we're chatting with friends here, not giving a lecture!
+        Stick to the HTML structure above.
 
-        # Use a professional tone and structure the article with clear headings (h2) and subheadings (h3).
-        # Wrap each paragraph in <p> tags.
-        # Aim for an article length of about {content_length} words.
-        # Write the article in {language}.
-        # Use HTML tags for structure, but do not include any CSS or JavaScript.
-
-        # Article Content:
-        # """
+        Article Content:
+        """
+        main
         
         # prompt = PromptTemplate(
         #     input_variables=["keyword", "content_length", "language"],
