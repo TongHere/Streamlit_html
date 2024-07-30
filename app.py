@@ -1,7 +1,9 @@
 import os
 import json
+from pathlib import Path
 import streamlit as st
 from dotenv import load_dotenv
+from jinja2 import Environment, FileSystemLoader, select_autoescape
 from langchain.chat_models import ChatOpenAI
 from langchain.chains import LLMChain
 from langchain.prompts import PromptTemplate
@@ -27,7 +29,16 @@ def upload_and_process_keywords_file(uploaded_file):
 
 def generate_article_content(keyword, content_length, language):
     try:
-        llm = ChatOpenAI(model='gpt-4', temperature=0.7)
+        # dummy text
+        # simulating chatgpt's API response
+        article_content = f'<p>dummy text for keyword {keyword} in language {language} text in bLorem ipsum dolor sit amet consectetur adipisicing elit. Accusantium, libero omnis perspiciatis animi at similique tempora mollitia in rem soluta.</p>'
+        article_content += f'<h2>heading for keyword {keyword}</h2>'
+        article_content += f'<p>dummy text for keyword {keyword} in language {language} text in bLorem ipsum dolor sit amet consectetur adipisicing elit. Accusantium, libero omnis perspiciatis animi at similique tempora mollitia in rem soluta.</p>'
+        article_content += f'<h2>heading for keyword {keyword}</h2>'
+        article_content += f'<p>dummy text for keyword {keyword} in language {language} text in bLorem ipsum dolor sit amet consectetur adipisicing elit. Accusantium, libero omnis perspiciatis animi at similique tempora mollitia in rem soluta.</p>'
+
+        return article_content
+        # llm = ChatOpenAI(model='gpt-4', temperature=0.7)
         
         prompt_template = """
         Give a friendly intro to {keyword}. What's it all about? Why should we care?
@@ -45,53 +56,19 @@ def generate_article_content(keyword, content_length, language):
 
         Article Content:
         """
+        main
         
-        prompt = PromptTemplate(
-            input_variables=["keyword", "content_length", "language"],
-            template=prompt_template
-        )
+        # prompt = PromptTemplate(
+        #     input_variables=["keyword", "content_length", "language"],
+        #     template=prompt_template
+        # )
         
-        chain = LLMChain(llm=llm, prompt=prompt)
+        # chain = LLMChain(llm=llm, prompt=prompt)
         
-        article_content = chain.run(keyword=keyword, content_length=content_length, language=language)
-        return article_content
+        # article_content = chain.run(keyword=keyword, content_length=content_length, language=language)
+        # return article_content
     except Exception as e:
         st.error(f"Error generating article for keyword '{keyword}': {str(e)}")
-        return None
-
-def generate_html5_page(keyword, article_content, html_template):
-    try:
-        # Update meta title
-        title_pattern = r'<title>.*?</title>'
-        new_title = f'<title>{keyword}</title>'
-        if re.search(title_pattern, html_template):
-            html_template = re.sub(title_pattern, new_title, html_template)
-        else:
-            head_end = html_template.find('</head>')
-            if head_end != -1:
-                html_template = html_template[:head_end] + new_title + html_template[head_end:]
-            else:
-                st.warning("Could not find </head> tag. Title may not be updated.")
-
-        # Insert article content
-        content_section_start = html_template.find('<section class="content-section">')
-        content_section_end = html_template.find('</section>', content_section_start)
-        
-        if content_section_start != -1 and content_section_end != -1:
-            before_content = html_template[:content_section_start + len('<section class="content-section">')]
-            after_content = html_template[content_section_end:]
-            
-            new_content = f"""
-            <h1>{keyword}</h1>
-            {article_content}
-            """
-            
-            return before_content + new_content + after_content
-        else:
-            st.error("Could not find the content section in the HTML template.")
-            return None
-    except Exception as e:
-        st.error(f"Error generating HTML page: {str(e)}")
         return None
 
 def generate_json_metadata(keyword):
@@ -126,19 +103,26 @@ def main():
     st.header("AI HTML5 and JSON Generator")
 
     keyword_file = st.file_uploader("Upload your keywords file (txt)", type="txt")
-    html_template_file = st.file_uploader("Upload your HTML template file", type="html")
+
+    # load template
+    templates_directory = Path().absolute() / "templates"
+    jinja_env = Environment(
+        loader=FileSystemLoader(templates_directory),
+        autoescape=select_autoescape(),
+        extensions=["jinja2_time.TimeExtension"],
+    )
+    template = jinja_env.get_template("instacams.html.jinja")
 
     languages = ["English", "Spanish", "French", "German", "Italian"]
     selected_language = st.selectbox("Select the language for the articles:", languages)
 
     content_length = st.number_input("Enter the desired word count for each article:", min_value=100, max_value=2000, value=800)
 
-    if keyword_file and html_template_file:
+    if keyword_file:
         if st.button("Generate HTML5 and JSON Files"):
             keywords = upload_and_process_keywords_file(keyword_file)
-            html_template = html_template_file.getvalue().decode('utf-8')
             
-            if keywords and html_template:
+            if keywords:
                 st.write(f"Keywords found: {', '.join(keywords)}")
                 progress_bar = st.progress(0)
                 status_text = st.empty()
@@ -149,7 +133,8 @@ def main():
                         status_text.text(f"Generating content for: {keyword}")
                         article_content = generate_article_content(keyword, content_length, selected_language)
                         if article_content:
-                            html5_page = generate_html5_page(keyword, article_content, html_template)
+                            html5_page = template.render(article_content=article_content, keyword=keyword)
+
                             json_metadata = generate_json_metadata(keyword)
                             
                             if html5_page:
