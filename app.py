@@ -56,7 +56,6 @@ def generate_article_content(keyword, content_length, language):
 
         Article Content:
         """
-        main
         
         # prompt = PromptTemplate(
         #     input_variables=["keyword", "content_length", "language"],

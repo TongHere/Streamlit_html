@@ -351,8 +351,8 @@
                 src="../../assets/image/blonde-straight-hair-on-bed-with-laptop.png"
                 alt="{{ keyword }}"
               />
-              <h1>{{ keyword }}</h1>
-              {{ article_content }}
+              <h1>{{ keyword | safe }}</h1>
+              {{ article_content | safe }}
             </div>
           </div>
         </div>
