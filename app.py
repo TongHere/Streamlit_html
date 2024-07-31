@@ -38,33 +38,33 @@ def generate_article_content(keyword, content_length, language):
         article_content += f'<p>dummy text for keyword {keyword} in language {language} text in bLorem ipsum dolor sit amet consectetur adipisicing elit. Accusantium, libero omnis perspiciatis animi at similique tempora mollitia in rem soluta.</p>'
 
         return article_content
+        # Uncomment the following lines when ready to use the actual LLM
         # llm = ChatOpenAI(model='gpt-4', temperature=0.7)
-        
-        prompt_template = """
-        Give a friendly intro to {keyword}. What's it all about? Why should we care?
-        Structure the article like this:
-
-        1. Introduction to {keyword}
-        2. Break down the important stuff about {keyword}. What should people know?
-        3. Share some awesome tips and tricks for mastering {keyword}.</p>
-        4. Future trends or predictions in the area of {keyword}
-        5. Sum it all up and give some easy-to-follow advice on{keyword}
-        
-        Keep it fun, friendly, and easy to read. Aim for about {content_length} words.
-        Write in {language}, and remember - we're chatting with friends here, not giving a lecture!
-        Stick to the HTML structure above.
-
-        Article Content:
-        """
-        main
-        
+        # 
+        # prompt_template = """
+        # Give a friendly intro to {keyword}. What's it all about? Why should we care?
+        # Structure the article like this:
+        # 
+        # 1. Introduction to {keyword}
+        # 2. Break down the important stuff about {keyword}. What should people know?
+        # 3. Share some awesome tips and tricks for mastering {keyword}.</p>
+        # 4. Future trends or predictions in the area of {keyword}
+        # 5. Sum it all up and give some easy-to-follow advice on{keyword}
+        # 
+        # Keep it fun, friendly, and easy to read. Aim for about {content_length} words.
+        # Write in {language}, and remember - we're chatting with friends here, not giving a lecture!
+        # Stick to the HTML structure above.
+        # 
+        # Article Content:
+        # """
+        # 
         # prompt = PromptTemplate(
         #     input_variables=["keyword", "content_length", "language"],
         #     template=prompt_template
         # )
-        
+        # 
         # chain = LLMChain(llm=llm, prompt=prompt)
-        
+        # 
         # article_content = chain.run(keyword=keyword, content_length=content_length, language=language)
         # return article_content
     except Exception as e:
@@ -104,14 +104,15 @@ def main():
 
     keyword_file = st.file_uploader("Upload your keywords file (txt)", type="txt")
 
-    # load template
+    # load templates
     templates_directory = Path().absolute() / "templates"
     jinja_env = Environment(
         loader=FileSystemLoader(templates_directory),
         autoescape=select_autoescape(),
         extensions=["jinja2_time.TimeExtension"],
     )
-    template = jinja_env.get_template("instacams.html.jinja")
+    html_template = jinja_env.get_template("instacams.html.jinja")
+    json_template = jinja_env.get_template("html.json.jinja")
 
     languages = ["English", "Spanish", "French", "German", "Italian"]
     selected_language = st.selectbox("Select the language for the articles:", languages)
@@ -133,18 +134,19 @@ def main():
                         status_text.text(f"Generating content for: {keyword}")
                         article_content = generate_article_content(keyword, content_length, selected_language)
                         if article_content:
-                            html5_page = template.render(article_content=article_content, keyword=keyword)
+                            html5_page = html_template.render(article_content=article_content, keyword=keyword)
 
                             json_metadata = generate_json_metadata(keyword)
+                            json_content = json_template.render(metadata=json_metadata)
                             
-                            if html5_page:
+                            if html5_page and json_content:
                                 # Add HTML file to zip
                                 html_filename = f"{keyword.replace(' ', '_')}.html"
                                 zip_file.writestr(html_filename, html5_page)
                                 
                                 # Add JSON file to zip
                                 json_filename = f"{keyword.replace(' ', '_')}.json"
-                                zip_file.writestr(json_filename, json.dumps(json_metadata, indent=2))
+                                zip_file.writestr(json_filename, json_content)
 
                         progress_bar.progress((i + 1) / len(keywords))
                         time.sleep(0.1)  # To prevent potential rate limiting
