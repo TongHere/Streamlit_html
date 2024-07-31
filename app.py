@@ -25,47 +25,44 @@ def upload_and_process_keywords_file(uploaded_file):
         return None
 
 def generate_article_content(keyword, content_length, language):
-    try:
-        # dummy text
-        # simulating chatgpt's API response
-        article_content = f'<p>dummy text for keyword {keyword} in language {language} text in bLorem ipsum dolor sit amet consectetur adipisicing elit. Accusantium, libero omnis perspiciatis animi at similique tempora mollitia in rem soluta.</p>'
-        article_content += f'<h2>heading for keyword {keyword}</h2>'
-        article_content += f'<p>dummy text for keyword {keyword} in language {language} text in bLorem ipsum dolor sit amet consectetur adipisicing elit. Accusantium, libero omnis perspiciatis animi at similique tempora mollitia in rem soluta.</p>'
-        article_content += f'<h2>heading for keyword {keyword}</h2>'
-        article_content += f'<p>dummy text for keyword {keyword} in language {language} text in bLorem ipsum dolor sit amet consectetur adipisicing elit. Accusantium, libero omnis perspiciatis animi at similique tempora mollitia in rem soluta.</p>'
+    raise Exception('Upps, article content failed to be generated in generate_article_content')
+    # dummy text
+    # simulating chatgpt's API response
+    article_content = f'<p>dummy text for keyword {keyword} in language {language} text in bLorem ipsum dolor sit amet consectetur adipisicing elit. Accusantium, libero omnis perspiciatis animi at similique tempora mollitia in rem soluta.</p>'
+    article_content += f'<h2>heading for keyword {keyword}</h2>'
+    article_content += f'<p>dummy text for keyword {keyword} in language {language} text in bLorem ipsum dolor sit amet consectetur adipisicing elit. Accusantium, libero omnis perspiciatis animi at similique tempora mollitia in rem soluta.</p>'
+    article_content += f'<h2>heading for keyword {keyword}</h2>'
+    article_content += f'<p>dummy text for keyword {keyword} in language {language} text in bLorem ipsum dolor sit amet consectetur adipisicing elit. Accusantium, libero omnis perspiciatis animi at similique tempora mollitia in rem soluta.</p>'
 
-        return article_content
-        # llm = ChatOpenAI(model='gpt-4', temperature=0.7)
-        
-        prompt_template = """
-        Give a friendly intro to {keyword}. What's it all about? Why should we care?
-        Structure the article like this:
+    return article_content
+    # llm = ChatOpenAI(model='gpt-4', temperature=0.7)
+    
+    prompt_template = """
+    Give a friendly intro to {keyword}. What's it all about? Why should we care?
+    Structure the article like this:
 
-        1. Introduction to {keyword}
-        2. Break down the important stuff about {keyword}. What should people know?
-        3. Share some awesome tips and tricks for mastering {keyword}.</p>
-        4. Future trends or predictions in the area of {keyword}
-        5. Sum it all up and give some easy-to-follow advice on{keyword}
-        
-        Keep it fun, friendly, and easy to read. Aim for about {content_length} words.
-        Write in {language}, and remember - we're chatting with friends here, not giving a lecture!
-        Stick to the HTML structure above.
+    1. Introduction to {keyword}
+    2. Break down the important stuff about {keyword}. What should people know?
+    3. Share some awesome tips and tricks for mastering {keyword}.</p>
+    4. Future trends or predictions in the area of {keyword}
+    5. Sum it all up and give some easy-to-follow advice on{keyword}
+    
+    Keep it fun, friendly, and easy to read. Aim for about {content_length} words.
+    Write in {language}, and remember - we're chatting with friends here, not giving a lecture!
+    Stick to the HTML structure above.
 
-        Article Content:
-        """
-        
-        # prompt = PromptTemplate(
-        #     input_variables=["keyword", "content_length", "language"],
-        #     template=prompt_template
-        # )
-        
-        # chain = LLMChain(llm=llm, prompt=prompt)
-        
-        # article_content = chain.run(keyword=keyword, content_length=content_length, language=language)
-        # return article_content
-    except Exception as e:
-        st.error(f"Error generating article for keyword '{keyword}': {str(e)}")
-        return None
+    Article Content:
+    """
+    
+    # prompt = PromptTemplate(
+    #     input_variables=["keyword", "content_length", "language"],
+    #     template=prompt_template
+    # )
+    
+    # chain = LLMChain(llm=llm, prompt=prompt)
+    
+    # article_content = chain.run(keyword=keyword, content_length=content_length, language=language)
+    # return article_content
 
 def get_relative_path(keyword):
     return keyword.lower().replace(' ', '-')
@@ -108,21 +105,26 @@ def main():
                         status_text.text(f"Generating content for: {keyword}")
 
                         keyword_capitalized = keyword.title()
-                        article_content = generate_article_content(keyword, content_length, selected_language)
-                        if article_content:
+                        relative_path = get_relative_path(keyword)
+
+                        try:
+                            article_content = generate_article_content(keyword, content_length, selected_language)
+
                             html_contents = html_template.render(article_content=article_content, keyword_capitalized=keyword_capitalized)
 
-                            relative_path = get_relative_path(keyword)
-                            json_contents = json_template.render(keyword_capitalized=keyword_capitalized, relative_path=relative_path)
+                            html_filename = f"{relative_path}.html"
+                            zip_file.writestr(html_filename, html_contents)
+                            status_text.text(f"{relative_path}.html created, added to zip")
+                        except Exception as exception:
+                            st.error(f"Error generating article for keyword '{keyword}': {str(exception)}")
+                            # status_text.text(f"{relative_path}.html NOT CREATED!")
+                            # status_text.text(f"Proceeding with json file")
 
-                            if html_contents:
-                                # Add HTML file to zip
-                                html_filename = f"{relative_path}.html"
-                                zip_file.writestr(html_filename, html_contents)
-                                
-                                # Add JSON file to zip
-                                json_filename = f"{relative_path}.html.json"
-                                zip_file.writestr(json_filename, json_contents)
+                        json_contents = json_template.render(keyword_capitalized=keyword_capitalized, relative_path=relative_path)
+
+                        json_filename = f"{relative_path}.html.json"
+                        zip_file.writestr(json_filename, json_contents)
+                        status_text.text(f"{relative_path}.html.json created, added to zip")
 
                         progress_bar.progress((i + 1) / len(keywords))
                         time.sleep(0.1)  # To prevent potential rate limiting
