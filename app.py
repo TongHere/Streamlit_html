@@ -123,7 +123,7 @@ def main():
                                 
                                 # Add JSON file to zip
                                 json_filename = f"{keyword.replace(' ', '_')}.json"
-                                zip_file.writestr(json_filename, json.dumps(json_contents, indent=2))
+                                zip_file.writestr(json_filename, json_contents)
 
                         progress_bar.progress((i + 1) / len(keywords))
                         time.sleep(0.1)  # To prevent potential rate limiting
