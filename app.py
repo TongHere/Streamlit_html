@@ -109,12 +109,14 @@ def main():
                 with zipfile.ZipFile(zip_buffer, "a", zipfile.ZIP_DEFLATED, False) as zip_file:
                     for i, keyword in enumerate(keywords):
                         status_text.text(f"Generating content for: {keyword}")
+
+                        keyword_capitalized = keyword.title()
                         article_content = generate_article_content(keyword, content_length, selected_language)
                         if article_content:
-                            html_contents = html_template.render(article_content=article_content, keyword=keyword)
+                            html_contents = html_template.render(article_content=article_content, keyword_capitalized=keyword_capitalized)
 
                             relative_path = get_relative_path(keyword)
-                            json_contents = json_template.render(keyword=keyword, relative_path=relative_path)
+                            json_contents = json_template.render(keyword_capitalized=keyword_capitalized, relative_path=relative_path)
 
                             if html_contents:
                                 # Add HTML file to zip
@@ -122,7 +124,7 @@ def main():
                                 zip_file.writestr(html_filename, html_contents)
                                 
                                 # Add JSON file to zip
-                                json_filename = f"{relative_path}.json"
+                                json_filename = f"{relative_path}.html.json"
                                 zip_file.writestr(json_filename, json_contents)
 
                         progress_bar.progress((i + 1) / len(keywords))

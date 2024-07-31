@@ -1,6 +1,6 @@
 {
-  "title": "{{ keyword }} - Video Chat Alternative - InstaCams",
-  "description": "With {{ keyword }}, enjoy a cam-to-cam chat with strangers. Meet random people worldwide looking for an entertaining {{ keyword }} alternative site.",
+  "title": "{{ keyword_capitalized }} - Video Chat Alternative - InstaCams",
+  "description": "With {{ keyword_capitalized }}, enjoy a cam-to-cam chat with strangers. Meet random people worldwide looking for an entertaining {{ keyword_capitalized }} alternative site.",
   "canonical": "https://www.instacams.com/{{ relative_path }}",
   "hreflang": [
     {
