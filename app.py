@@ -71,30 +71,30 @@ def generate_article_content(keyword, content_length, language):
         st.error(f"Error generating article for keyword '{keyword}': {str(e)}")
         return None
 
-def generate_json_metadata(keyword):
-    return {
-        "title": f"{keyword} - Video Chat Alternative - InstaCams",
-        "description": f"With {keyword}, enjoy a cam-to-cam chat with strangers. Meet random people worldwide looking for an entertaining {keyword} alternative site.",
-        "canonical": f"https://www.instacams.com/{keyword.lower().replace(' ', '-')}",
-        "hreflang": [
-            {
-                "lang": "x-default",
-                "href": f"https://www.instacams.com/{keyword.lower().replace(' ', '-')}"
-            },
-            {
-                "lang": "de",
-                "href": f"https://www.instacams.com/de/{keyword.lower().replace(' ', '-')}"
-            },
-            {
-                "lang": "es",
-                "href": f"https://www.instacams.com/es/{keyword.lower().replace(' ', '-')}"
-            },
-            {
-                "lang": "fr",
-                "href": f"https://www.instacams.com/fr/{keyword.lower().replace(' ', '-')}"
-            }
-        ]
-    }
+# def generate_json_metadata(keyword):
+#     return {
+#         "title": f"{keyword} - Video Chat Alternative - InstaCams",
+#         "description": f"With {keyword}, enjoy a cam-to-cam chat with strangers. Meet random people worldwide looking for an entertaining {keyword} alternative site.",
+#         "canonical": f"https://www.instacams.com/{keyword.lower().replace(' ', '-')}",
+#         "hreflang": [
+#             {
+#                 "lang": "x-default",
+#                 "href": f"https://www.instacams.com/{keyword.lower().replace(' ', '-')}"
+#             },
+#             {
+#                 "lang": "de",
+#                 "href": f"https://www.instacams.com/de/{keyword.lower().replace(' ', '-')}"
+#             },
+#             {
+#                 "lang": "es",
+#                 "href": f"https://www.instacams.com/es/{keyword.lower().replace(' ', '-')}"
+#             },
+#             {
+#                 "lang": "fr",
+#                 "href": f"https://www.instacams.com/fr/{keyword.lower().replace(' ', '-')}"
+#             }
+#         ]
+#     }
 
 def main():
     load_dotenv()
@@ -135,18 +135,16 @@ def main():
                         article_content = generate_article_content(keyword, content_length, selected_language)
                         if article_content:
                             html5_page = html_template.render(article_content=article_content, keyword=keyword)
-
-                            json_metadata = generate_json_metadata(keyword)
-                            json_content = json_template.render(metadata=json_metadata)
+                            json_file = json_template.render(article_content=article_content, keyword=keyword)
                             
-                            if html5_page and json_content:
+                            if html5_page and json_file:
                                 # Add HTML file to zip
                                 html_filename = f"{keyword.replace(' ', '_')}.html"
                                 zip_file.writestr(html_filename, html5_page)
                                 
                                 # Add JSON file to zip
                                 json_filename = f"{keyword.replace(' ', '_')}.json"
-                                zip_file.writestr(json_filename, json_content)
+                                zip_file.writestr(json_filename, json_file)
 
                         progress_bar.progress((i + 1) / len(keywords))
                         time.sleep(0.1)  # To prevent potential rate limiting
