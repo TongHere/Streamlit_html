@@ -1,0 +1,11 @@
+{
+  "title": "{{ keyword }} - Video Chat Alternative - InstaCams",
+  "description": "With {{ keyword }}, enjoy a cam-to-cam chat with strangers. Meet random people worldwide looking for an entertaining {{ keyword }} alternative site.",
+  "canonical": "https://www.instacams.com/{{ relative_path }}",
+  "hreflang": [
+    {
+      "lang": "x-default",
+      "href": "https://www.instacams.com/{{ relative_path }}"
+    }
+  ]
+}

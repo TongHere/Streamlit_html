@@ -71,30 +71,8 @@ def generate_article_content(keyword, content_length, language):
         st.error(f"Error generating article for keyword '{keyword}': {str(e)}")
         return None
 
-def generate_json_metadata(keyword):
-    return {
-        "title": f"{keyword} - Video Chat Alternative - InstaCams",
-        "description": f"With {keyword}, enjoy a cam-to-cam chat with strangers. Meet random people worldwide looking for an entertaining {keyword} alternative site.",
-        "canonical": f"https://www.instacams.com/{keyword.lower().replace(' ', '-')}",
-        "hreflang": [
-            {
-                "lang": "x-default",
-                "href": f"https://www.instacams.com/{keyword.lower().replace(' ', '-')}"
-            },
-            {
-                "lang": "de",
-                "href": f"https://www.instacams.com/de/{keyword.lower().replace(' ', '-')}"
-            },
-            {
-                "lang": "es",
-                "href": f"https://www.instacams.com/es/{keyword.lower().replace(' ', '-')}"
-            },
-            {
-                "lang": "fr",
-                "href": f"https://www.instacams.com/fr/{keyword.lower().replace(' ', '-')}"
-            }
-        ]
-    }
+def get_relative_path(keyword):
+    return keyword.lower().replace(' ', '-')
 
 def main():
     load_dotenv()
@@ -111,7 +89,8 @@ def main():
         autoescape=select_autoescape(),
         extensions=["jinja2_time.TimeExtension"],
     )
-    template = jinja_env.get_template("instacams.html.jinja")
+    html_template = jinja_env.get_template("instacams-seo-subpage.html")
+    json_template = jinja_env.get_template("instacams-seo-subpage.html.json")
 
     languages = ["English", "Spanish", "French", "German", "Italian"]
     selected_language = st.selectbox("Select the language for the articles:", languages)
@@ -133,18 +112,19 @@ def main():
                         status_text.text(f"Generating content for: {keyword}")
                         article_content = generate_article_content(keyword, content_length, selected_language)
                         if article_content:
-                            html5_page = template.render(article_content=article_content, keyword=keyword)
+                            html_contents = html_template.render(article_content=article_content, keyword=keyword)
 
-                            json_metadata = generate_json_metadata(keyword)
-                            
-                            if html5_page:
+                            relative_path = get_relative_path(keyword)
+                            json_contents = json_template.render(keyword=keyword, relative_path=relative_path)
+
+                            if html_contents:
                                 # Add HTML file to zip
                                 html_filename = f"{keyword.replace(' ', '_')}.html"
-                                zip_file.writestr(html_filename, html5_page)
+                                zip_file.writestr(html_filename, html_contents)
                                 
                                 # Add JSON file to zip
                                 json_filename = f"{keyword.replace(' ', '_')}.json"
-                                zip_file.writestr(json_filename, json.dumps(json_metadata, indent=2))
+                                zip_file.writestr(json_filename, json.dumps(json_contents, indent=2))
 
                         progress_bar.progress((i + 1) / len(keywords))
                         time.sleep(0.1)  # To prevent potential rate limiting
