@@ -118,11 +118,11 @@ def main():
 
                             if html_contents:
                                 # Add HTML file to zip
-                                html_filename = f"{keyword.replace(' ', '_')}.html"
+                                html_filename = f"{relative_path}.html"
                                 zip_file.writestr(html_filename, html_contents)
                                 
                                 # Add JSON file to zip
-                                json_filename = f"{keyword.replace(' ', '_')}.json"
+                                json_filename = f"{relative_path}.json"
                                 zip_file.writestr(json_filename, json_contents)
 
                         progress_bar.progress((i + 1) / len(keywords))
