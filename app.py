@@ -29,14 +29,14 @@ def generate_article_content(keyword, content_length, language):
     # raise Exception('Upps, article content failed to be generated in generate_article_content')
     # dummy text
     # simulating chatgpt's API response
-    article_content = f'<p>dummy text for keyword {keyword} in language {language} text in bLorem ipsum dolor sit amet consectetur adipisicing elit. Accusantium, libero omnis perspiciatis animi at similique tempora mollitia in rem soluta.</p>'
-    article_content += f'<h2>heading for keyword {keyword}</h2>'
-    article_content += f'<p>dummy text for keyword {keyword} in language {language} text in bLorem ipsum dolor sit amet consectetur adipisicing elit. Accusantium, libero omnis perspiciatis animi at similique tempora mollitia in rem soluta.</p>'
-    article_content += f'<h2>heading for keyword {keyword}</h2>'
-    article_content += f'<p>dummy text for keyword {keyword} in language {language} text in bLorem ipsum dolor sit amet consectetur adipisicing elit. Accusantium, libero omnis perspiciatis animi at similique tempora mollitia in rem soluta.</p>'
+    # article_content = f'<p>dummy text for keyword {keyword} in language {language} text in bLorem ipsum dolor sit amet consectetur adipisicing elit. Accusantium, libero omnis perspiciatis animi at similique tempora mollitia in rem soluta.</p>'
+    # article_content += f'<h2>heading for keyword {keyword}</h2>'
+    # article_content += f'<p>dummy text for keyword {keyword} in language {language} text in bLorem ipsum dolor sit amet consectetur adipisicing elit. Accusantium, libero omnis perspiciatis animi at similique tempora mollitia in rem soluta.</p>'
+    # article_content += f'<h2>heading for keyword {keyword}</h2>'
+    # article_content += f'<p>dummy text for keyword {keyword} in language {language} text in bLorem ipsum dolor sit amet consectetur adipisicing elit. Accusantium, libero omnis perspiciatis animi at similique tempora mollitia in rem soluta.</p>'
 
-    return article_content
-    # llm = ChatOpenAI(model='gpt-4', temperature=0.7)
+    # return article_content
+    llm = ChatOpenAI(model='gpt-4', temperature=0.7)
     
     prompt_template = """
     Give a friendly intro to {keyword}. What's it all about? Why should we care?
@@ -55,15 +55,15 @@ def generate_article_content(keyword, content_length, language):
     Article Content:
     """
     
-    # prompt = PromptTemplate(
-    #     input_variables=["keyword", "content_length", "language"],
-    #     template=prompt_template
-    # )
+    prompt = PromptTemplate(
+        input_variables=["keyword", "content_length", "language"],
+        template=prompt_template
+    )
     
-    # chain = LLMChain(llm=llm, prompt=prompt)
+    chain = LLMChain(llm=llm, prompt=prompt)
     
-    # article_content = chain.run(keyword=keyword, content_length=content_length, language=language)
-    # return article_content
+    article_content = chain.run(keyword=keyword, content_length=content_length, language=language)
+    return article_content
 
 def get_relative_path(keyword):
     keyword_lower_case = keyword.lower()
