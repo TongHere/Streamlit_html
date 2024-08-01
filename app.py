@@ -7,6 +7,7 @@ from langchain.chains import LLMChain
 from langchain.prompts import PromptTemplate
 import zipfile
 import io
+import re
 import time
 
 load_dotenv()
@@ -25,7 +26,7 @@ def upload_and_process_keywords_file(uploaded_file):
         return None
 
 def generate_article_content(keyword, content_length, language):
-    raise Exception('Upps, article content failed to be generated in generate_article_content')
+    # raise Exception('Upps, article content failed to be generated in generate_article_content')
     # dummy text
     # simulating chatgpt's API response
     article_content = f'<p>dummy text for keyword {keyword} in language {language} text in bLorem ipsum dolor sit amet consectetur adipisicing elit. Accusantium, libero omnis perspiciatis animi at similique tempora mollitia in rem soluta.</p>'
@@ -65,7 +66,12 @@ def generate_article_content(keyword, content_length, language):
     # return article_content
 
 def get_relative_path(keyword):
-    return keyword.lower().replace(' ', '-')
+    keyword_lower_case = keyword.lower()
+    keyword_with_hyphens_only = re.sub('[^0-9a-z]+', '-', keyword_lower_case)
+    keyword_with_single_hyphens = re.sub('-+', '-', keyword_with_hyphens_only)
+    keyword_without_trailing_leading_hyphens = keyword_with_single_hyphens.strip('-')
+
+    return keyword_without_trailing_leading_hyphens
 
 def main():
     load_dotenv()
