@@ -43,7 +43,7 @@ def generate_article_content(keyword, content_length, language):
 
         1. Introduction to {keyword}
         2. Break down the interesting stuff about {keyword}. What should people know?
-        3. Share some awesome details about {keyword}.</p>
+        3. Share some awesome details about {keyword}.
         4. Future trends or predictions in the area of {keyword}
         5. Sum it all up and give some easy-to-follow reclosing on{keyword}
         
