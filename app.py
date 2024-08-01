@@ -38,45 +38,12 @@ def generate_article_content(keyword, content_length, language):
     llm = ChatOpenAI(model='gpt-4', temperature=0.7)
     
     prompt_template = """
-    Create engaging content about {keyword}. Adapt your approach based on the nature of {keyword} and the desired output format.
 
-    Key elements to include:
-
-    1. Introduction
-    - Provide a hook or interesting fact about {keyword}
-    - Briefly explain what {keyword} is and its relevance
-
-    2. Core Information
-    - Present key aspects, features, or principles of {keyword}
-    - Explain its importance or impact in relevant contexts
-
-    3. Practical Insights
-    - Discuss real-world applications or implications of {keyword}
-    - If applicable, include tips, best practices, or how-to information
-
-    4. Challenges and Solutions
-    - Address potential difficulties or controversies related to {keyword}
-    - Offer possible solutions or alternative perspectives
-
-    5. Future Outlook
-    - Explore potential developments or trends involving {keyword}
-    - Discuss how {keyword} might evolve or influence its field
-
-    6. Conclusion
-    - Summarize main points
-    - Provide a call-to-action or final thought to engage the audience
-
-    General Guidelines:
-    - Adjust the depth and focus based on the complexity of {keyword}
-    - Use a tone appropriate for the target audience, ranging from casual to professional
-    - Incorporate relevant examples, analogies, or case studies to illustrate points
-    - Break up content with subheadings, bullet points, or numbered lists for readability
-    - Aim for approximately {content_length} words, adjusting as needed for the format
-    - Write in {language}, ensuring clarity and engagement throughout
-    - Adapt the structure and emphasis to suit the specific requirements of {keyword} and the desired content format (e.g., blog post, script, presentation, social media series)
-
-    Remember to tailor the content to the intended purpose and audience, whether it's to inform, persuade, entertain, or inspire action related to {keyword}.
-
+    Give a friendly intro to {keyword}. What's it all about? Why should we care?
+    Structure the article according to {keyword} with five paragraphs. 
+    Keep it fun, friendly, and easy to read. Aim for about {content_length} words.
+    Write in {language}, and remember - we're chatting with friends here, not giving a lecture!
+    Stick to the HTML structure above.
 
     Article Content:
     """
