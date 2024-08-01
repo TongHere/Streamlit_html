@@ -42,10 +42,10 @@ def generate_article_content(keyword, content_length, language):
         Structure the article like this:
 
         1. Introduction to {keyword}
-        2. Break down the important stuff about {keyword}. What should people know?
-        3. Share some awesome tips and tricks for mastering {keyword}.</p>
+        2. Break down the interesting stuff about {keyword}. What should people know?
+        3. Share some awesome details about {keyword}.</p>
         4. Future trends or predictions in the area of {keyword}
-        5. Sum it all up and give some easy-to-follow advice on{keyword}
+        5. Sum it all up and give some easy-to-follow reclosing on{keyword}
         
         Keep it fun, friendly, and easy to read. Aim for about {content_length} words.
         Write in {language}, and remember - we're chatting with friends here, not giving a lecture!
