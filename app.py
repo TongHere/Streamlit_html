@@ -38,14 +38,21 @@ def generate_article_content(keyword, content_length, language):
     llm = ChatOpenAI(model='gpt-4', temperature=0.7)
     
     prompt_template = """
+        Give a friendly intro to {keyword}. What's it all about? Why should we care?
+        Structure the article like this:
 
-    Give a friendly intro to {keyword}. What's it all about? Why should we care?
-    Structure the article according to {keyword} with five paragraphs. 
-    Keep it fun, friendly, and easy to read. Aim for about {content_length} words.
-    Write in {language}, and remember - we're chatting with friends here, not giving a lecture!
-    Stick to the HTML structure above.
+        1. Introduction to {keyword}
+        2. Break down the important stuff about {keyword}. What should people know?
+        3. Share some awesome tips and tricks for mastering {keyword}.</p>
+        4. Future trends or predictions in the area of {keyword}
+        5. Sum it all up and give some easy-to-follow advice on{keyword}
+        
+        Keep it fun, friendly, and easy to read. Aim for about {content_length} words.
+        Write in {language}, and remember - we're chatting with friends here, not giving a lecture!
+        Stick to the HTML structure above.
 
-    Article Content:
+        Article Content:
+
     """
     
     prompt = PromptTemplate(
