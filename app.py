@@ -44,7 +44,7 @@ def generate_article_content(keyword, content_length, language):
     Write a {content_length} word article in {language} for InstaCams that fulfils this search intent.
     Conclude the article by recommending them to try InstaCams.
     The article should be formatted as valid HTML fragment with valid heading and paragraph HTML elements.
-    Do not decrease the heading, make sure heading are the same except the first one.
+    Make sure heading are all the same.
     Article as valid HTML fragment:
     """
     
