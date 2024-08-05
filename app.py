@@ -114,7 +114,7 @@ def main():
                         try:
                             article_content = generate_article_content(keyword, content_length, selected_language)
 
-                            html_contents = html_template.render(article_content=article_contentt , keyword_capitalized=keyword_capitalized)
+                            html_contents = html_template.render(article_content=article_content , keyword_capitalized=keyword_capitalized)
 
                             article_content_json_filename = f"{relative_path}.json"
                             html_filename = f"{relative_path}.html"
