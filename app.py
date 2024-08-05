@@ -39,20 +39,12 @@ def generate_article_content(keyword, content_length, language):
     llm = ChatOpenAI(model='gpt-4', temperature=0.7)
     
     prompt_template = """
-    Give a friendly intro to {keyword}. What's it all about? Why should we care?
-    Structure the article like this:
-
-    1. Introduction to {keyword}
-    2. Break down the fun stuff about {keyword}. What should people know?
-    3. Share some awesome information and details for {keyword}.
-    4. Future trends in the area of {keyword}
-    5. Sum it all up and give some easy-to-follow closing on{keyword}
-    
-    Keep it fun, friendly, and easy to read. Aim for about {content_length} words.
-    Write in {language}, and remember - we're chatting with friends here, not giving a lecture!
-    Stick to the HTML structure above.
-
-    Article Content:
+    You are a writer for InstaCams.com, a cam to cam platform.
+    You are writing for the keyword "{keyword}" and the search intent is "User is looking for alternatives to {keyword}".
+    Write a {content_length} word article in {language} for InstaCams that fulfils this search intent.
+    Conclude the article by recommending them to try InstaCams.
+    The article should be formatted as valid HTML fragment with valid heading and paragraph HTML elements.
+    Article as valid HTML fragment:
     """
     
     prompt = PromptTemplate(
@@ -63,7 +55,13 @@ def generate_article_content(keyword, content_length, language):
     chain = LLMChain(llm=llm, prompt=prompt)
     
     article_content = chain.run(keyword=keyword, content_length=content_length, language=language)
-    return article_content
+
+    # article content starts with ```html and ends with ```
+    # strip these to get only html
+    article_content_lstripped = article_content.lstrip('```html')
+    article_content_as_html = article_content_lstripped.rstrip('```')
+
+    return article_content_as_html
 
 def get_relative_path(keyword):
     keyword_lower_case = keyword.lower()
@@ -116,11 +114,13 @@ def main():
                         try:
                             article_content = generate_article_content(keyword, content_length, selected_language)
 
-                            html_contents = html_template.render(article_content=article_content, keyword_capitalized=keyword_capitalized)
+                            html_contents = html_template.render(article_content=article_contentt , keyword_capitalized=keyword_capitalized)
 
+                            article_content_json_filename = f"{relative_path}.json"
                             html_filename = f"{relative_path}.html"
                             zip_file.writestr(html_filename, html_contents)
                             status_text.text(f"{relative_path}.html created, added to zip")
+                            status_text.text(f"{article_content_json_filename} created, added to zip")
                         except Exception as exception:
                             st.error(f"Error generating article for keyword '{keyword}': {str(exception)}")
                             # status_text.text(f"{relative_path}.html NOT CREATED!")
