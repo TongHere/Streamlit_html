@@ -104,15 +104,33 @@ def get_relative_path(keyword):
 
     return keyword_without_trailing_leading_hyphens
 
+import io
+import zipfile
+import time
+from pathlib import Path
+from dotenv import load_dotenv
+import streamlit as st
+from jinja2 import Environment, FileSystemLoader, select_autoescape
+from jinja2_time import TimeExtension
+
+def upload_and_process_keywords_file(uploaded_file):
+    # This function remains the same as in the previous artifact
+    # You can copy it from the "csv-upload-process-function" artifact
+
+def get_relative_path(keyword):
+    # Implement this function based on your requirements
+
+def generate_article_content(keyword, content_length, selected_language):
+    # Implement this function based on your requirements
+
 def main():
     load_dotenv()
     st.set_page_config(page_title="AI HTML5 and JSON Generator", page_icon="📄")
-
     st.header("AI HTML5 and JSON Generator")
-
-    keyword_file = st.file_uploader("Upload your keywords file (txt)", type="txt")
-
-    # load template
+    
+    keyword_file = st.file_uploader("Upload your keywords file (CSV)", type="csv")
+    
+    # Load templates
     templates_directory = Path().absolute() / "templates"
     jinja_env = Environment(
         loader=FileSystemLoader(templates_directory),
@@ -124,21 +142,23 @@ def main():
 
     languages = ["English", "Spanish", "French", "German", "Italian"]
     selected_language = st.selectbox("Select the language for the articles:", languages)
-
     content_length = st.number_input("Enter the desired word count for each article:", min_value=100, max_value=2000, value=800)
 
     if keyword_file:
         if st.button("Generate HTML5 and JSON Files"):
-            keywords = upload_and_process_keywords_file(keyword_file)
-            
-            if keywords:
-                st.write(f"Keywords found: {', '.join(keywords)}")
+            keywords_and_values = upload_and_process_keywords_file(keyword_file)
+
+            if keywords_and_values:
+                st.write(f"Keywords and values found:")
+                for keyword, value in keywords_and_values:
+                    st.write(f"- Keyword: '{keyword}', Value: '{value}'")
+                
                 progress_bar = st.progress(0)
                 status_text = st.empty()
 
                 zip_buffer = io.BytesIO()
                 with zipfile.ZipFile(zip_buffer, "a", zipfile.ZIP_DEFLATED, False) as zip_file:
-                    for i, keyword in enumerate(keywords):
+                    for i, (keyword, value) in enumerate(keywords_and_values):
                         status_text.text(f"Generating content for: {keyword}")
 
                         keyword_capitalized = keyword.title()
@@ -147,29 +167,34 @@ def main():
                         try:
                             article_content = generate_article_content(keyword, content_length, selected_language)
 
-                            html_contents = html_template.render(article_content=article_content , keyword_capitalized=keyword_capitalized)
+                            html_contents = html_template.render(
+                                article_content=article_content,
+                                keyword_capitalized=keyword_capitalized,
+                                value=value  # You can use this value in your template if needed
+                            )
 
-                            article_content_json_filename = f"{relative_path}.json"
                             html_filename = f"{relative_path}.html"
                             zip_file.writestr(html_filename, html_contents)
-                            status_text.text(f"{relative_path}.html created, added to zip")
-                            status_text.text(f"{article_content_json_filename} created, added to zip")
+                            status_text.text(f"{html_filename} created, added to zip")
+
+                            json_contents = json_template.render(
+                                keyword_capitalized=keyword_capitalized,
+                                relative_path=relative_path,
+                                value=value  # You can use this value in your JSON template if needed
+                            )
+
+                            json_filename = f"{relative_path}.html.json"
+                            zip_file.writestr(json_filename, json_contents)
+                            status_text.text(f"{json_filename} created, added to zip")
+
                         except Exception as exception:
-                            st.error(f"Error generating article for keyword '{keyword}': {str(exception)}")
-                            # status_text.text(f"{relative_path}.html NOT CREATED!")
-                            # status_text.text(f"Proceeding with json file")
+                            st.error(f"Error generating content for keyword '{keyword}': {str(exception)}")
 
-                        json_contents = json_template.render(keyword_capitalized=keyword_capitalized, relative_path=relative_path)
-
-                        json_filename = f"{relative_path}.html.json"
-                        zip_file.writestr(json_filename, json_contents)
-                        status_text.text(f"{relative_path}.html.json created, added to zip")
-
-                        progress_bar.progress((i + 1) / len(keywords))
+                        progress_bar.progress((i + 1) / len(keywords_and_values))
                         time.sleep(0.1)  # To prevent potential rate limiting
 
                 status_text.text("All files generated successfully!")
-                
+
                 # Offer the zip file for download
                 zip_buffer.seek(0)
                 st.download_button(
@@ -179,7 +204,7 @@ def main():
                     mime="application/zip"
                 )
             else:
-                st.error("Failed to process input files. Please check your keyword file and HTML template and try again.")
+                st.error("Failed to process input files. Please check your CSV file and try again.")
 
 if __name__ == '__main__':
     main()
