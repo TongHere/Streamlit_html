@@ -36,7 +36,7 @@ def generate_article_content(keyword, content_length, language):
     # article_content += f'<p>dummy text for keyword {keyword} in language {language} text in bLorem ipsum dolor sit amet consectetur adipisicing elit. Accusantium, libero omnis perspiciatis animi at similique tempora mollitia in rem soluta.</p>'
 
     # return article_content
-    llm = ChatOpenAI(model='gpt-4', temperature=0.7)
+    llm = ChatOpenAI(model='gpt-4o', temperature=0.7)
     
     prompt_template = """
     You are a writer for InstaCams.com, a cam to cam platform.
@@ -44,6 +44,7 @@ def generate_article_content(keyword, content_length, language):
     Write a {content_length} word article in {language} for InstaCams that fulfils this search intent.
     Conclude the article by recommending them to try InstaCams.
     The article should be formatted as valid HTML fragment with valid heading and paragraph HTML elements.
+    Use <h2> as a section header.
     Article as valid HTML fragment:
     """
     
