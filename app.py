@@ -57,15 +57,15 @@ def upload_and_process_keywords_file(uploaded_file):
         print("No CSV file was uploaded.")
         return None
 
-def generate_article_content(keyword, content_length, language):
+def generate_article_content(keyword, content_length, language,search_intent ):
     # raise Exception('Upps, article content failed to be generated in generate_article_content')
     # dummy text
     # simulating chatgpt's API response
-    article_content = f'<p>dummy text for keyword {keyword} in language {language} text in bLorem ipsum dolor sit amet consectetur adipisicing elit. Accusantium, libero omnis perspiciatis animi at similique tempora mollitia in rem soluta.</p>'
+    article_content = f'<p>dummy text for keyword {keyword} in language {language} text in bLorem ipsum dolor read {search_intent} sit amet consectetur adipisicing elit. Accusantium, libero omnis perspiciatis animi at similique tempora mollitia in rem soluta.</p>'
     article_content += f'<h2>heading for keyword {keyword}</h2>'
-    article_content += f'<p>dummy text for keyword {keyword} in language {language} text in bLorem ipsum dolor sit amet consectetur adipisicing elit. Accusantium, libero omnis perspiciatis animi at similique tempora mollitia in rem soluta.</p>'
+    article_content += f'<p>dummy text for keyword {keyword} in language {language} text in bLorem ipsum dolor read {search_intent} sit amet consectetur adipisicing elit. Accusantium, libero omnis perspiciatis animi at similique tempora mollitia in rem soluta.</p>'
     article_content += f'<h2>heading for keyword {keyword}</h2>'
-    article_content += f'<p>dummy text for keyword {keyword} in language {language} text in bLorem ipsum dolor sit amet consectetur adipisicing elit. Accusantium, libero omnis perspiciatis animi at similique tempora mollitia in rem soluta.</p>'
+    article_content += f'<p>dummy text for keyword {keyword} in language {language} text in bLorem ipsum dolor read {search_intent} sit amet consectetur adipisicing elit. Accusantium, libero omnis perspiciatis animi at similique tempora mollitia in rem soluta.</p>'
 
     return article_content
     # llm = ChatOpenAI(model='gpt-4o', temperature=0.7)
@@ -146,12 +146,12 @@ def main():
                         relative_path = get_relative_path(keyword)
 
                         try:
-                            article_content = generate_article_content(keyword, content_length, selected_language)
+                            article_content = generate_article_content(keyword, content_length, selected_language, search_intent)
 
                             html_contents = html_template.render(
                                 article_content=article_content,
                                 keyword_capitalized=keyword_capitalized,
-                                search_intent=search_intent  # You can use this search_intent in your template if needed
+                                search_intent=search_intent
                             )
 
                             html_filename = f"{relative_path}.html"
@@ -161,7 +161,7 @@ def main():
                             json_contents = json_template.render(
                                 keyword_capitalized=keyword_capitalized,
                                 relative_path=relative_path,
-                                search_intent=search_intent  # You can use this search_intent in your JSON template if needed
+                                search_intent=search_intent 
                             )
 
                             json_filename = f"{relative_path}.html.json"
