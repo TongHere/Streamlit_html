@@ -35,13 +35,13 @@ def upload_and_process_keywords_file(uploaded_file):
             for row in csv_reader:
                 if len(row) >= 2:
                     keyword = row[0].strip()
-                    value = row[1].strip()
-                    print(f"Read: Keyword='{keyword}', Value='{value}'")
-                    if keyword and value:  # Ensure neither is empty
-                        keywords_and_values.append((keyword, value))
-                        print(f"Added: ({keyword}, {value})")
+                    search_intent = row[1].strip()
+                    print(f"Read: Keyword='{keyword}', search_intent='{search_intent}'")
+                    if keyword and search_intent:  # Ensure neither is empty
+                        keywords_and_values.append((keyword, search_intent))
+                        print(f"Added: ({keyword}, {search_intent})")
                     else:
-                        print("Skipped: Empty keyword or value")
+                        print("Skipped: Empty keyword or search_intent")
                 else:
                     print(f"Skipped: Insufficient columns in row {row}")
             
@@ -131,15 +131,15 @@ def main():
 
             if keywords_and_values:
                 st.write(f"Keywords and search intent found:")
-                for keyword, value in keywords_and_values:
-                    st.write(f"- Keyword: '{keyword}', search_intent: '{value}'")
+                for keyword, search_intent in keywords_and_values:
+                    st.write(f"- Keyword: '{keyword}', search_intent: '{search_intent}'")
                 
                 progress_bar = st.progress(0)
                 status_text = st.empty()
 
                 zip_buffer = io.BytesIO()
                 with zipfile.ZipFile(zip_buffer, "a", zipfile.ZIP_DEFLATED, False) as zip_file:
-                    for i, (keyword, value) in enumerate(keywords_and_values):
+                    for i, (keyword, search_intent) in enumerate(keywords_and_values):
                         status_text.text(f"Generating content for: {keyword}")
 
                         keyword_capitalized = keyword.title()
@@ -151,7 +151,7 @@ def main():
                             html_contents = html_template.render(
                                 article_content=article_content,
                                 keyword_capitalized=keyword_capitalized,
-                                value=value  # You can use this value in your template if needed
+                                search_intent=search_intent  # You can use this search_intent in your template if needed
                             )
 
                             html_filename = f"{relative_path}.html"
@@ -161,7 +161,7 @@ def main():
                             json_contents = json_template.render(
                                 keyword_capitalized=keyword_capitalized,
                                 relative_path=relative_path,
-                                value=value  # You can use this value in your JSON template if needed
+                                search_intent=search_intent  # You can use this search_intent in your JSON template if needed
                             )
 
                             json_filename = f"{relative_path}.html.json"
