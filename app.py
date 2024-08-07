@@ -130,9 +130,9 @@ def main():
             keywords_and_values = upload_and_process_keywords_file(keyword_file)
 
             if keywords_and_values:
-                st.write(f"Keywords and search intend found:")
+                st.write(f"Keywords and search intent found:")
                 for keyword, value in keywords_and_values:
-                    st.write(f"- Keyword: '{keyword}', search_intend: '{value}'")
+                    st.write(f"- Keyword: '{keyword}', search_intent: '{value}'")
                 
                 progress_bar = st.progress(0)
                 status_text = st.empty()
