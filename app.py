@@ -121,7 +121,7 @@ def main():
     html_template = jinja_env.get_template("instacams-seo-subpage.html")
     json_template = jinja_env.get_template("instacams-seo-subpage.html.json")
 
-    languages = ["English", "Spanish", "French", "German", "Italian"]
+    languages = ["English", "Spanish", "French", "German", "Italian","Suomi", "Japanese","Korean", "Dutch", "Norsk", "Portuguese", "Romanian", "Russian", "Swedish"]
     selected_language = st.selectbox("Select the language for the articles:", languages)
     content_length = st.number_input("Enter the desired word count for each article:", min_value=100, max_value=2000, value=800)
 
