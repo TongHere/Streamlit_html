@@ -1,3 +1,17 @@
+# AI HTML5 and JSON Generator
+
+## Toggle article generation fake mode
+
+In order to use fake data when developping, set `USE_FAKE_ARTICLE_CONTENT` to `True` in `.env`
+
+```
+USE_FAKE_ARTICLE_CONTENT="True"
+```
+
+This uses `generate_article_content_fake.py`
+
+Any other value (including not setting the variable, or setting it to `USE_FAKE_ARTICLE_CONTENT=...`) sets the env value to false, using OpenAI data (and credits), using `generate_article_content.py`
+
 # RAG AI Chatbot
 
 The AI Chatbot is an advanced conversational agent specifically designed to assist users by extracting and utilizing information from PDF documents. By employing cutting-edge Natural Language Processing (NLP) technologies, this chatbot is capable of processing text from PDFs, generating embeddings for efficient retrieval, and engaging in meaningful dialogue based on the extracted content.

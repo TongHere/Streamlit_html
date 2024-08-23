@@ -3,15 +3,20 @@ from pathlib import Path
 import streamlit as st
 from dotenv import load_dotenv
 from jinja2 import Environment, FileSystemLoader, select_autoescape
-from langchain.chat_models import ChatOpenAI
-from langchain.chains import LLMChain
-from langchain.prompts import PromptTemplate
 import zipfile
 import io
 import re
 import time
+import os
 
 load_dotenv()
+
+if (os.getenv('USE_FAKE_ARTICLE_CONTENT', 'False').lower() == 'true'):
+    print("\nUsing fake article content generation (NOT OpenAI)\n")
+    from generate_article_content_fake import generate_article_content 
+else:
+    print("\nUsing real article content generation: OpenAI\n")
+    from generate_article_content import generate_article_content 
 
 import csv
 import io
@@ -59,48 +64,6 @@ def upload_and_process_keywords_file(uploaded_file):
         print("No CSV file was uploaded.")
         return None
 
-def test_generate_article_content(keyword, content_length, language, search_intent):
-    # raise Exception('Upps, article content failed to be generated in generate_article_content')
-
-    # dummy text
-    # simulating chatgpt's API response
-    article_content = f'<p>dummy text for keyword {keyword} in language {language} text in bLorem ipsum dolor read {search_intent} sit amet consectetur adipisicing elit. Accusantium, libero omnis perspiciatis animi at similique tempora mollitia in rem soluta.</p>'
-    article_content += f'<h2>heading for keyword {keyword}</h2>'
-    article_content += f'<p>dummy text for keyword {keyword} in language {language} text in bLorem ipsum dolor read {search_intent} sit amet consectetur adipisicing elit. Accusantium, libero omnis perspiciatis animi at similique tempora mollitia in rem soluta.</p>'
-    article_content += f'<h2>heading for keyword {keyword}</h2>'
-    article_content += f'<p>dummy text for keyword {keyword} in language {language} text in bLorem ipsum dolor read {search_intent} sit amet consectetur adipisicing elit. Accusantium, libero omnis perspiciatis animi at similique tempora mollitia in rem soluta.</p>'
-
-    return article_content
-
-def generate_article_content(keyword, content_length, language, search_intent):
-    llm = ChatOpenAI(model='gpt-4o', temperature=0.7)
-    
-    prompt_template = """
-    You are a writer for InstaCams.com, a cam to cam platform.
-    You are writing for the keyword "{keyword}" and the search intent is "{search_intent}".
-    Write a {content_length} word article in {language} for InstaCams that fulfils this search intent.
-    Conclude the article by recommending them to try InstaCams.
-    The article should be formatted as valid HTML fragment with valid heading and paragraph HTML elements.
-    Use <h2> as a section header.
-    Article as valid HTML fragment:
-    """
-    
-    prompt = PromptTemplate(
-        input_variables=["keyword", "content_length", "language","search_intent"],
-        template=prompt_template
-    )
-    
-    chain = LLMChain(llm=llm, prompt=prompt)
-    
-    article_content = chain.run(keyword=keyword, content_length=content_length, language=language, search_intent=search_intent)
-
-    # article content starts with ```html and ends with ```
-    # strip these to get only html
-    article_content_lstripped = article_content.lstrip('```html')
-    article_content_as_html = article_content_lstripped.rstrip('```')
-
-    return article_content_as_html
-
 def get_relative_path(keyword):
     keyword_lower_case = keyword.lower()
     keyword_with_hyphens_only = re.sub('[^0-9a-z]+', '-', keyword_lower_case)
@@ -116,7 +79,6 @@ def get_footer_title_for_json_template(footer_title):
     return footer_title_escaped
 
 def main():
-    load_dotenv()
     st.set_page_config(page_title="AI HTML5 and JSON Generator", page_icon="📄")
     st.header("AI HTML5 and JSON Generator")
     
@@ -157,8 +119,7 @@ def main():
                         relative_path = get_relative_path(keyword)
 
                         try:
-                            article_content = test_generate_article_content(keyword, content_length, selected_language, search_intent)
-                            # article_content = generate_article_content(keyword, content_length, selected_language, search_intent)
+                            article_content = generate_article_content(keyword, content_length, selected_language, search_intent)
 
                             html_contents = html_template.render(
                                 article_content=article_content,
