@@ -12,49 +12,82 @@ import time
 
 load_dotenv()
 
+import csv
+import io
+
 def upload_and_process_keywords_file(uploaded_file):
     if uploaded_file is not None:
         try:
+            # Read the content of the uploaded file
             content = uploaded_file.getvalue().decode('utf-8')
-            keywords = [line.strip() for line in content.split('\n') if line.strip()]
-            return keywords
+            
+            print("File content:")
+            print(content)
+            print("\nProcessing CSV rows:")
+            
+            # Create a CSV reader object
+            csv_reader = csv.reader(io.StringIO(content))
+            
+            # Initialize a list to store the keywords and values
+            keywords_and_values = []
+            
+            # Read the first and second columns
+            for row in csv_reader:
+                if len(row) >= 2:
+                    keyword = row[0].strip()
+                    search_intent = row[1].strip()
+                    print(f"Read: Keyword='{keyword}', search_intent='{search_intent}'")
+                    if keyword and search_intent:  # Ensure neither is empty
+                        keywords_and_values.append((keyword, search_intent))
+                        print(f"Added: ({keyword}, {search_intent})")
+                    else:
+                        print("Skipped: Empty keyword or search_intent")
+                else:
+                    print(f"Skipped: Insufficient columns in row {row}")
+            
+            print("\nFinal processed list:")
+            for item in keywords_and_values:
+                print(item)
+            
+            return keywords_and_values
         except Exception as e:
-            st.error(f"Error processing the keywords file: {str(e)}")
+            print(f"Error processing the CSV file: {str(e)}")
             return None
     else:
-        st.error("No keyword file was uploaded.")
+        print("No CSV file was uploaded.")
         return None
 
-def generate_article_content(keyword, content_length, language):
+def generate_article_content(keyword, content_length, language,search_intent):
     # raise Exception('Upps, article content failed to be generated in generate_article_content')
     # dummy text
     # simulating chatgpt's API response
-    # article_content = f'<p>dummy text for keyword {keyword} in language {language} text in bLorem ipsum dolor sit amet consectetur adipisicing elit. Accusantium, libero omnis perspiciatis animi at similique tempora mollitia in rem soluta.</p>'
+    # article_content = f'<p>dummy text for keyword {keyword} in language {language} text in bLorem ipsum dolor read {search_intent} sit amet consectetur adipisicing elit. Accusantium, libero omnis perspiciatis animi at similique tempora mollitia in rem soluta.</p>'
     # article_content += f'<h2>heading for keyword {keyword}</h2>'
-    # article_content += f'<p>dummy text for keyword {keyword} in language {language} text in bLorem ipsum dolor sit amet consectetur adipisicing elit. Accusantium, libero omnis perspiciatis animi at similique tempora mollitia in rem soluta.</p>'
+    # article_content += f'<p>dummy text for keyword {keyword} in language {language} text in bLorem ipsum dolor read {search_intent} sit amet consectetur adipisicing elit. Accusantium, libero omnis perspiciatis animi at similique tempora mollitia in rem soluta.</p>'
     # article_content += f'<h2>heading for keyword {keyword}</h2>'
-    # article_content += f'<p>dummy text for keyword {keyword} in language {language} text in bLorem ipsum dolor sit amet consectetur adipisicing elit. Accusantium, libero omnis perspiciatis animi at similique tempora mollitia in rem soluta.</p>'
+    # article_content += f'<p>dummy text for keyword {keyword} in language {language} text in bLorem ipsum dolor read {search_intent} sit amet consectetur adipisicing elit. Accusantium, libero omnis perspiciatis animi at similique tempora mollitia in rem soluta.</p>'
 
     # return article_content
-    llm = ChatOpenAI(model='gpt-4', temperature=0.7)
+    llm = ChatOpenAI(model='gpt-4o', temperature=0.7)
     
     prompt_template = """
     You are a writer for InstaCams.com, a cam to cam platform.
-    You are writing for the keyword "{keyword}" and the search intent is "User is looking for alternatives to {keyword}".
+    You are writing for the keyword "{keyword}" and the search intent is "{search_intent}".
     Write a {content_length} word article in {language} for InstaCams that fulfils this search intent.
     Conclude the article by recommending them to try InstaCams.
     The article should be formatted as valid HTML fragment with valid heading and paragraph HTML elements.
+    Use <h2> as a section header.
     Article as valid HTML fragment:
     """
     
     prompt = PromptTemplate(
-        input_variables=["keyword", "content_length", "language"],
+        input_variables=["keyword", "content_length", "language","search_intent"],
         template=prompt_template
     )
     
     chain = LLMChain(llm=llm, prompt=prompt)
     
-    article_content = chain.run(keyword=keyword, content_length=content_length, language=language)
+    article_content = chain.run(keyword=keyword, content_length=content_length, language=language, search_intent=search_intent)
 
     # article content starts with ```html and ends with ```
     # strip these to get only html
@@ -74,12 +107,11 @@ def get_relative_path(keyword):
 def main():
     load_dotenv()
     st.set_page_config(page_title="AI HTML5 and JSON Generator", page_icon="📄")
-
     st.header("AI HTML5 and JSON Generator")
-
-    keyword_file = st.file_uploader("Upload your keywords file (txt)", type="txt")
-
-    # load template
+    
+    keyword_file = st.file_uploader("Upload your keywords file (CSV)", type="csv")
+    
+    # Load templates
     templates_directory = Path().absolute() / "templates"
     jinja_env = Environment(
         loader=FileSystemLoader(templates_directory),
@@ -89,54 +121,61 @@ def main():
     html_template = jinja_env.get_template("instacams-seo-subpage.html")
     json_template = jinja_env.get_template("instacams-seo-subpage.html.json")
 
-    languages = ["English", "Spanish", "French", "German", "Italian"]
+    languages = ["English", "Spanish", "French", "German", "Italian","Suomi", "Japanese","Korean", "Dutch", "Norsk", "Portuguese", "Romanian", "Russian", "Swedish"]
     selected_language = st.selectbox("Select the language for the articles:", languages)
-
     content_length = st.number_input("Enter the desired word count for each article:", min_value=100, max_value=2000, value=800)
 
     if keyword_file:
         if st.button("Generate HTML5 and JSON Files"):
-            keywords = upload_and_process_keywords_file(keyword_file)
-            
-            if keywords:
-                st.write(f"Keywords found: {', '.join(keywords)}")
+            keywords_and_values = upload_and_process_keywords_file(keyword_file)
+
+            if keywords_and_values:
+                st.write(f"Keywords and search intent found:")
+                for keyword, search_intent in keywords_and_values:
+                    st.write(f"- Keyword: '{keyword}', search_intent: '{search_intent}'")
+                
                 progress_bar = st.progress(0)
                 status_text = st.empty()
 
                 zip_buffer = io.BytesIO()
                 with zipfile.ZipFile(zip_buffer, "a", zipfile.ZIP_DEFLATED, False) as zip_file:
-                    for i, keyword in enumerate(keywords):
+                    for i, (keyword, search_intent) in enumerate(keywords_and_values):
                         status_text.text(f"Generating content for: {keyword}")
 
                         keyword_capitalized = keyword.title()
                         relative_path = get_relative_path(keyword)
 
                         try:
-                            article_content = generate_article_content(keyword, content_length, selected_language)
+                            article_content = generate_article_content(keyword, content_length, selected_language, search_intent)
 
-                            html_contents = html_template.render(article_content=article_content , keyword_capitalized=keyword_capitalized)
+                            html_contents = html_template.render(
+                                article_content=article_content,
+                                keyword_capitalized=keyword_capitalized,
+                                search_intent=search_intent
+                            )
 
-                            article_content_json_filename = f"{relative_path}.json"
                             html_filename = f"{relative_path}.html"
                             zip_file.writestr(html_filename, html_contents)
-                            status_text.text(f"{relative_path}.html created, added to zip")
-                            status_text.text(f"{article_content_json_filename} created, added to zip")
+                            status_text.text(f"{html_filename} created, added to zip")
+
+                            json_contents = json_template.render(
+                                keyword_capitalized=keyword_capitalized,
+                                relative_path=relative_path,
+                                search_intent=search_intent 
+                            )
+
+                            json_filename = f"{relative_path}.html.json"
+                            zip_file.writestr(json_filename, json_contents)
+                            status_text.text(f"{json_filename} created, added to zip")
+
                         except Exception as exception:
-                            st.error(f"Error generating article for keyword '{keyword}': {str(exception)}")
-                            # status_text.text(f"{relative_path}.html NOT CREATED!")
-                            # status_text.text(f"Proceeding with json file")
+                            st.error(f"Error generating content for keyword '{keyword}': {str(exception)}")
 
-                        json_contents = json_template.render(keyword_capitalized=keyword_capitalized, relative_path=relative_path)
-
-                        json_filename = f"{relative_path}.html.json"
-                        zip_file.writestr(json_filename, json_contents)
-                        status_text.text(f"{relative_path}.html.json created, added to zip")
-
-                        progress_bar.progress((i + 1) / len(keywords))
+                        progress_bar.progress((i + 1) / len(keywords_and_values))
                         time.sleep(0.1)  # To prevent potential rate limiting
 
                 status_text.text("All files generated successfully!")
-                
+
                 # Offer the zip file for download
                 zip_buffer.seek(0)
                 st.download_button(
@@ -146,7 +185,7 @@ def main():
                     mime="application/zip"
                 )
             else:
-                st.error("Failed to process input files. Please check your keyword file and HTML template and try again.")
+                st.error("Failed to process input files. Please check your CSV file and try again.")
 
 if __name__ == '__main__':
     main()
