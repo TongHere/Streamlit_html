@@ -11,7 +11,7 @@ import os
 
 load_dotenv()
 
-if (os.getenv('USE_FAKE_ARTICLE_CONTENT', 'False').lower() == 'true'):
+if (os.getenv('USE_FAKE_ARTICLE_CONTENT', 'False').lower() == 'False'):
     print("\nUsing fake article content generation (NOT OpenAI)\n")
     from generate_article_content_fake import generate_article_content 
 else:
