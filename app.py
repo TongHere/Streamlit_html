@@ -1,3 +1,4 @@
+import json
 from pathlib import Path
 import streamlit as st
 from dotenv import load_dotenv
@@ -36,12 +37,13 @@ def upload_and_process_keywords_file(uploaded_file):
                 if len(row) >= 2:
                     keyword = row[0].strip()
                     search_intent = row[1].strip()
-                    print(f"Read: Keyword='{keyword}', search_intent='{search_intent}'")
-                    if keyword and search_intent:  # Ensure neither is empty
-                        keywords_and_values.append((keyword, search_intent))
-                        print(f"Added: ({keyword}, {search_intent})")
+                    footer_title = row[2].strip()
+                    print(f"Read: Keyword='{keyword}', search_intent='{search_intent}', footer_title='{footer_title}'")
+                    if keyword and search_intent and footer_title:  # Ensure neither is empty
+                        keywords_and_values.append((keyword, search_intent, footer_title))
+                        print(f"Added: ({keyword}, {search_intent}, {footer_title})")
                     else:
-                        print("Skipped: Empty keyword or search_intent")
+                        print("Skipped: Empty keyword or search_intent or footer title")
                 else:
                     print(f"Skipped: Insufficient columns in row {row}")
             
@@ -57,17 +59,20 @@ def upload_and_process_keywords_file(uploaded_file):
         print("No CSV file was uploaded.")
         return None
 
-def generate_article_content(keyword, content_length, language,search_intent):
+def test_generate_article_content(keyword, content_length, language, search_intent):
     # raise Exception('Upps, article content failed to be generated in generate_article_content')
+
     # dummy text
     # simulating chatgpt's API response
-    # article_content = f'<p>dummy text for keyword {keyword} in language {language} text in bLorem ipsum dolor read {search_intent} sit amet consectetur adipisicing elit. Accusantium, libero omnis perspiciatis animi at similique tempora mollitia in rem soluta.</p>'
-    # article_content += f'<h2>heading for keyword {keyword}</h2>'
-    # article_content += f'<p>dummy text for keyword {keyword} in language {language} text in bLorem ipsum dolor read {search_intent} sit amet consectetur adipisicing elit. Accusantium, libero omnis perspiciatis animi at similique tempora mollitia in rem soluta.</p>'
-    # article_content += f'<h2>heading for keyword {keyword}</h2>'
-    # article_content += f'<p>dummy text for keyword {keyword} in language {language} text in bLorem ipsum dolor read {search_intent} sit amet consectetur adipisicing elit. Accusantium, libero omnis perspiciatis animi at similique tempora mollitia in rem soluta.</p>'
+    article_content = f'<p>dummy text for keyword {keyword} in language {language} text in bLorem ipsum dolor read {search_intent} sit amet consectetur adipisicing elit. Accusantium, libero omnis perspiciatis animi at similique tempora mollitia in rem soluta.</p>'
+    article_content += f'<h2>heading for keyword {keyword}</h2>'
+    article_content += f'<p>dummy text for keyword {keyword} in language {language} text in bLorem ipsum dolor read {search_intent} sit amet consectetur adipisicing elit. Accusantium, libero omnis perspiciatis animi at similique tempora mollitia in rem soluta.</p>'
+    article_content += f'<h2>heading for keyword {keyword}</h2>'
+    article_content += f'<p>dummy text for keyword {keyword} in language {language} text in bLorem ipsum dolor read {search_intent} sit amet consectetur adipisicing elit. Accusantium, libero omnis perspiciatis animi at similique tempora mollitia in rem soluta.</p>'
 
-    # return article_content
+    return article_content
+
+def generate_article_content(keyword, content_length, language, search_intent):
     llm = ChatOpenAI(model='gpt-4o', temperature=0.7)
     
     prompt_template = """
@@ -104,6 +109,12 @@ def get_relative_path(keyword):
 
     return keyword_without_trailing_leading_hyphens
 
+def get_footer_title_for_json_template(footer_title):
+    footer_title_stripped = footer_title.strip()
+    footer_title_escaped = json.dumps(footer_title_stripped).strip('"')
+
+    return footer_title_escaped
+
 def main():
     load_dotenv()
     st.set_page_config(page_title="AI HTML5 and JSON Generator", page_icon="📄")
@@ -131,22 +142,23 @@ def main():
 
             if keywords_and_values:
                 st.write(f"Keywords and search intent found:")
-                for keyword, search_intent in keywords_and_values:
-                    st.write(f"- Keyword: '{keyword}', search_intent: '{search_intent}'")
+                for keyword, search_intent, footer_title in keywords_and_values:
+                    st.write(f"- Keyword: '{keyword}', search_intent: '{search_intent}', footer_title: '{footer_title}'")
                 
                 progress_bar = st.progress(0)
                 status_text = st.empty()
 
                 zip_buffer = io.BytesIO()
                 with zipfile.ZipFile(zip_buffer, "a", zipfile.ZIP_DEFLATED, False) as zip_file:
-                    for i, (keyword, search_intent) in enumerate(keywords_and_values):
+                    for i, (keyword, search_intent, footer_title) in enumerate(keywords_and_values):
                         status_text.text(f"Generating content for: {keyword}")
 
                         keyword_capitalized = keyword.title()
                         relative_path = get_relative_path(keyword)
 
                         try:
-                            article_content = generate_article_content(keyword, content_length, selected_language, search_intent)
+                            article_content = test_generate_article_content(keyword, content_length, selected_language, search_intent)
+                            # article_content = generate_article_content(keyword, content_length, selected_language, search_intent)
 
                             html_contents = html_template.render(
                                 article_content=article_content,
@@ -158,10 +170,13 @@ def main():
                             zip_file.writestr(html_filename, html_contents)
                             status_text.text(f"{html_filename} created, added to zip")
 
+                            footer_title_for_template = get_footer_title_for_json_template(footer_title)
+
                             json_contents = json_template.render(
                                 keyword_capitalized=keyword_capitalized,
                                 relative_path=relative_path,
-                                search_intent=search_intent 
+                                search_intent=search_intent,
+                                footer_title=footer_title_for_template
                             )
 
                             json_filename = f"{relative_path}.html.json"

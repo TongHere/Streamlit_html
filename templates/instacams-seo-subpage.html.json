@@ -2,7 +2,7 @@
   "title": "{{ keyword_capitalized }} - InstaCams",
   "description": "",
   "canonical": "https://www.instacams.com/{{ relative_path }}",
-  "footerTitle":"{{ relative_path }}",
+  "footerTitle": "{{ footer_title }}",
   "hreflang": [
     {
       "lang": "x-default",
