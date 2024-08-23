@@ -94,8 +94,67 @@ def main():
     html_template = jinja_env.get_template("instacams-seo-subpage.html")
     json_template = jinja_env.get_template("instacams-seo-subpage.html.json")
 
-    languages = ["English", "Spanish", "French", "German", "Italian","Suomi", "Japanese","Korean", "Dutch", "Norsk", "Portuguese", "Romanian", "Russian", "Swedish"]
+    languages = {
+        "English": {
+            "lang": "x-default",
+            "href_country_path": ""
+            }, 
+        "Spanish": {
+            "lang": "es",
+            "href_country_path": "es/"
+            }, 
+        "French": {
+            "lang": "fr",
+            "href_country_path": "fr/"
+            }, 
+        "German": {
+            "lang": "de",
+            "href_country_path": "de/"
+            }, 
+        "Italian": {
+            "lang": "it",
+            "href_country_path": "it/"
+            }, 
+        "Suomi": {
+            "lang": "fi",
+            "href_country_path": "fi/"
+            }, 
+        "Japanese": {
+            "lang": "ja",
+            "href_country_path": "ja/"
+            }, 
+        "Korean": {
+            "lang": "ko",
+            "href_country_path": "ko/"
+            }, 
+        "Dutch": {
+            "lang": "nl",
+            "href_country_path": "nl/"
+            }, 
+        "Norsk": {
+            "lang": "no",
+            "href_country_path": "no/"
+            }, 
+        "Portuguese": {
+            "lang": "pt",
+            "href_country_path": "pt/"
+            }, 
+        "Romanian": {
+            "lang": "ro",
+            "href_country_path": "ro/"
+            }, 
+        "Russian": {
+            "lang": "ru",
+            "href_country_path": "ru/"
+            }, 
+        "Swedish": {
+            "lang": "sv",
+            "href_country_path": "sv/"
+            }, 
+        }
     selected_language = st.selectbox("Select the language for the articles:", languages)
+    hreflang_language_config = languages.get(selected_language, languages["English"])
+
     content_length = st.number_input("Enter the desired word count for each article:", min_value=100, max_value=2000, value=800)
 
     if keyword_file:
@@ -137,7 +196,9 @@ def main():
                                 keyword_capitalized=keyword_capitalized,
                                 relative_path=relative_path,
                                 search_intent=search_intent,
-                                footer_title=footer_title_for_template
+                                footer_title=footer_title_for_template,
+                                lang=hreflang_language_config["lang"],
+                                href_country_path=hreflang_language_config["href_country_path"],
                             )
 
                             json_filename = f"{relative_path}.html.json"

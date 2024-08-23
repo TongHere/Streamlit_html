@@ -1,12 +1,12 @@
 {
   "title": "{{ keyword_capitalized }} - InstaCams",
   "description": "",
-  "canonical": "https://www.instacams.com/{{ relative_path }}",
+  "canonical": "https://www.instacams.com/{{ href_country_path }}{{ relative_path }}",
   "footerTitle": "{{ footer_title }}",
   "hreflang": [
     {
-      "lang": "x-default",
-      "href": "https://www.instacams.com/{{ relative_path }}"
+      "lang": "{{ lang }}",
+      "href": "https://www.instacams.com/{{ href_country_path }}{{ relative_path }}"
     }
   ]
 }
