@@ -32,6 +32,7 @@ def upload_and_process_keywords_file(uploaded_file):
             print("\nProcessing CSV rows:")
             
             # Create a CSV reader object
+            # csv_reader = csv.reader(io.StringIO(content, newline=None), delimiter=';')
             csv_reader = csv.reader(io.StringIO(content))
             
             # Initialize a list to store the keywords and values
